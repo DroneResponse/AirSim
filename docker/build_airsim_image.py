@@ -5,7 +5,7 @@ def main():
     parser = argparse.ArgumentParser(description='AirSim docker image builder')
     parser.add_argument('--source', action='store_true', help='compile unreal and airsim from source') # default is false
     parser.add_argument('--base_image', type=str, help='base image name AND tag')
-    parser.add_argument('--target_image', type=str, help='base image name AND tag')
+    parser.add_argument('--target_image', type=str, help='target image name AND tag')
 
     args = parser.parse_args()
     build_docker_image(args)
