@@ -1,6 +1,33 @@
 ARG BASE_IMAGE=nvidia/cudagl:10.0-devel-ubuntu18.04
 FROM $BASE_IMAGE
 
+# There is an error that prevents apt-get update from working
+# The details of how to fix this are not online...
+# basically you need nvidia's new key. Here's where they explain why:
+# https://forums.developer.nvidia.com/t/notice-cuda-linux-repository-key-rotation/212771
+#
+# but there's a problem with the instructions provided there. Instead get the
+# download URL for `cuda-keyring_1.0-1_all.deb` from:
+# https://developer.nvidia.com/cuda-downloads?target_os=Linux&target_arch=x86_64&Distribution=Ubuntu
+#
+# At the webpage:
+# 1. Click on the version of Ubuntu you're running (for example "18.04")
+# 2. For the Installer Type, click "deb (network)"
+#
+# You will then see a bash snippet. The first line of the bash snippet should
+# start with "wget http..."
+#
+# Put that wget URL here:
+ARG CUDA_KEYRING_DEB_URL=https://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/cuda-keyring_1.0-1_all.deb
+
+# Now for the work-around:
+RUN apt-key del 7fa2af80 \
+	&& rm -f /etc/apt/sources.list.d/*  \
+	&& DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y wget \
+	&& wget $CUDA_KEYRING_DEB_URL \
+	&& dpkg -i cuda-keyring_1.0-1_all.deb \
+	&& rm cuda-keyring_1.0-1_all.deb
+
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y --no-install-recommends \
 	python3 \
 	python3-pip \
